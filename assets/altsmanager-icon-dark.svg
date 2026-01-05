@@ -1,0 +1,6 @@
+<svg id="icon-dark" width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="120" height="120" rx="26" fill="#0F172A"/>
+                        <path d="M60 30L80 50L70 60L60 50L50 60L40 50L60 30Z" fill="#3B82F6"/>
+                        <path d="M40 60L50 70L60 60L70 70L80 60V80C80 85.5228 75.5228 90 70 90H50C44.4772 90 40 85.5228 40 80V60Z" fill="#60A5FA"/>
+                        <path d="M50 70L60 80L70 70L60 60L50 70Z" fill="#93C5FD" fill-opacity="0.6"/>
+                    </svg>

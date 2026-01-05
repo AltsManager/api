@@ -1,0 +1,5 @@
+<svg id="symbol-only" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M40 10L60 30L50 40L40 30L30 40L20 30L40 10Z" fill="#3B82F6"/>
+                        <path d="M20 40L30 50L40 40L50 50L60 40V60C60 65.5228 55.5228 70 50 70H30C24.4772 70 20 65.5228 20 60V40Z" fill="#60A5FA"/>
+                        <path d="M30 50L40 60L50 50L40 40L30 50Z" fill="#93C5FD" fill-opacity="0.6"/>
+                    </svg>
