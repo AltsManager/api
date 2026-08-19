@@ -9,6 +9,25 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: altsmanager
+          POSTGRES_PASSWORD: altsmanager
+          POSTGRES_DB: altsmanager
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U altsmanager"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://altsmanager:altsmanager@localhost:5432/altsmanager
+
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +44,9 @@ jobs:
 
       - name: Lint with ruff
         run: ruff check .
+
+      - name: Run migrations
+        run: alembic upgrade head
 
       - name: Run tests
         run: pytest

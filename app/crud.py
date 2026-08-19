@@ -1,1 +1,0 @@
-# CRUD utility functions placeholder

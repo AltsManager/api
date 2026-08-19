@@ -5,7 +5,7 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_get_users():
-    response = client.get("/users/")
+def test_health():
+    response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == [{"username": "alice"}]
+    assert response.json() == {"status": "ok"}

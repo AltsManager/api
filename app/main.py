@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from app.routers import users
+from app.routers import health
 
-app = FastAPI()
+app = FastAPI(title="AltsManager API")
 
-app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(health.router)
