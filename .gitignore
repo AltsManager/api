@@ -208,3 +208,6 @@ __marimo__/
 
 #Macos
 .DS_Store
+
+# Claude Code local config/plugins
+.claude/

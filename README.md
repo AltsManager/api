@@ -20,12 +20,19 @@ This is a new starter project, the beginning of the FastAPI core for AltsManager
 ## ▶️ How to Run
 
 ```bash
-git clone https://github.com/inanpy/fastapi-getting-started-guide.git
-cd fastapi-getting-started-guide
+git clone https://github.com/AltsManager/api.git
+cd api
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 uvicorn app.main:app --reload
+```
+
+## Development
+
+```bash
+ruff check .      # lint
+pytest            # run tests
 ```
 
 Visit:
