@@ -29,7 +29,7 @@ jobs:
       DATABASE_URL: postgresql+psycopg://altsmanager:altsmanager@localhost:5432/altsmanager
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
         uses: actions/setup-python@v5
