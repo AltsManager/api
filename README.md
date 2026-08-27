@@ -7,10 +7,11 @@ investing entities. It tracks transactions, ownership, documents (including K-1s
 and other tax forms), and counterparties (lawyers, accountants, fund managers),
 and is designed to be self-hosted so your data stays yours.
 
-This repo is the backend API (FastAPI). It's early — currently just the core
-ledger data model (entities, investments, ownership, transactions, documents).
-CRUD endpoints, auth, document storage, integrations (e.g. Carta), and AI agents
-for recurring data collection are on the roadmap.
+This repo is the backend API (FastAPI). It's early — currently the core ledger
+data model plus auth and CRUD for entities, counterparties, investments,
+ownership, and transactions, with a basic admin UI for browsing data.
+Document storage, third-party integrations (e.g. Carta), and AI agents for
+recurring data collection are on the roadmap.
 
 ## Requirements
 
@@ -31,6 +32,9 @@ cp .env.example .env          # adjust if needed
 docker compose up -d postgres
 alembic upgrade head
 
+# there's no signup endpoint by design — bootstrap the first admin user:
+python -m scripts.create_admin --email you@example.com --name "Your Name" --password "change-me"
+
 uvicorn app.main:app --reload
 ```
 
@@ -38,6 +42,9 @@ Visit:
 - Swagger UI: http://127.0.0.1:8000/docs
 - ReDoc: http://127.0.0.1:8000/redoc
 - Health check: http://127.0.0.1:8000/health
+- Admin panel: http://127.0.0.1:8000/admin (log in with the admin user above — a basic
+  auto-generated CRUD/browse UI over the database, not the real product UI, just
+  useful for seeing data while the API and frontend are built out)
 
 ## Development
 
