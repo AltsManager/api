@@ -8,10 +8,10 @@ and other tax forms), and counterparties (lawyers, accountants, fund managers),
 and is designed to be self-hosted so your data stays yours.
 
 This repo is the backend API (FastAPI). It's early — currently the core ledger
-data model plus auth and CRUD for entities, counterparties, investments,
-ownership, and transactions, with a basic admin UI for browsing data.
-Document storage, third-party integrations (e.g. Carta), and AI agents for
-recurring data collection are on the roadmap.
+data model, auth and CRUD for entities, counterparties, investments, ownership,
+and transactions, document upload/download/review-status tracking, and a basic
+admin UI for browsing data. Third-party integrations (e.g. Carta) and AI agents
+for recurring data collection are on the roadmap.
 
 ## Requirements
 
@@ -46,6 +46,20 @@ Visit:
   auto-generated CRUD/browse UI over the database, not the real product UI, just
   useful for seeing data while the API and frontend are built out)
 
+## Documents
+
+Files are stored via a pluggable backend, set with `STORAGE_BACKEND` in `.env`:
+- `local` (default) — kept on disk under `DOCUMENT_STORAGE_PATH`, nothing leaves
+  the machine. Good fit for the "privacy-oriented" / self-hosted goal.
+- `s3` — any S3-compatible object store (AWS S3, MinIO, Backblaze B2, ...),
+  configured via the `S3_*` settings in `.env.example`.
+
+Document *metadata* (filename, type, tax year, review status, links to the
+entity/investment/transaction it belongs to) always lives in Postgres regardless
+of backend. Upload via `POST /api/v1/documents` (or the nested
+`/api/v1/entities/{id}/documents` / `/api/v1/investments/{id}/documents`), and
+download via `GET /api/v1/documents/{id}/download`.
+
 ## Development
 
 ```bash
@@ -64,7 +78,7 @@ app/
   models/    SQLAlchemy ORM models (entity, investment, ownership, transaction, document, ...)
   schemas/   Pydantic request/response schemas
   crud/      data-access layer
-  services/  storage backends and other integrations
+  services/  document storage backends (local disk / S3-compatible) and other integrations
   routers/   FastAPI route handlers
 alembic/     database migrations
 tests/       pytest suite

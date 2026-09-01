@@ -8,3 +8,4 @@ bcrypt
 pyjwt
 sqladmin
 itsdangerous
+boto3

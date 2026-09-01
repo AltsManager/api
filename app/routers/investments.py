@@ -12,6 +12,7 @@ from app.crud import transaction as transaction_crud
 from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.common import Page
+from app.schemas.document import DocTypeForm, DocumentRead, NotesForm, TaxYearForm, UploadedFile
 from app.schemas.investment import InvestmentCreate, InvestmentRead, InvestmentUpdate
 from app.schemas.investment_attributes import validate_type_attributes
 from app.schemas.investment_counterparty import (
@@ -20,6 +21,7 @@ from app.schemas.investment_counterparty import (
 )
 from app.schemas.ownership import OwnershipCreate, OwnershipRead
 from app.schemas.transaction import TransactionCreate, TransactionRead
+from app.services.documents import save_uploaded_document
 
 router = APIRouter(prefix="/api/v1/investments", tags=["investments"])
 
@@ -145,4 +147,39 @@ def create_investment_counterparty(
     _require_counterparty(db, data.counterparty_id)
     return investment_crud.create_investment_counterparty(
         db, investment_id=investment_id, **data.model_dump()
+    )
+
+
+@router.get("/{investment_id}/documents", response_model=Page[DocumentRead])
+def list_investment_documents(
+    investment_id: uuid.UUID, db: DbSession, _: CurrentUser, limit: Limit = 50, offset: Offset = 0
+):
+    _get_or_404(db, investment_id)
+    items, total = investment_crud.list_investment_documents(db, investment_id, limit, offset)
+    return Page(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.post(
+    "/{investment_id}/documents", response_model=DocumentRead, status_code=status.HTTP_201_CREATED
+)
+def upload_investment_document(
+    investment_id: uuid.UUID,
+    db: DbSession,
+    current_user: WriteAccess,
+    file: UploadedFile,
+    doc_type: DocTypeForm,
+    tax_year: TaxYearForm = None,
+    notes: NotesForm = None,
+):
+    _get_or_404(db, investment_id)
+    return save_uploaded_document(
+        db,
+        file=file,
+        doc_type=doc_type,
+        tax_year=tax_year,
+        entity_id=None,
+        investment_id=investment_id,
+        transaction_id=None,
+        notes=notes,
+        uploaded_by=current_user.id,
     )

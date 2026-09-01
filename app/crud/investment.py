@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.crud import base
+from app.models.document import Document
 from app.models.investment import Investment
 from app.models.investment_counterparty import InvestmentCounterparty
 from app.models.ownership import Ownership
@@ -54,4 +55,10 @@ def create_investment_counterparty(db: Session, **fields):
 def list_investment_transactions(db: Session, investment_id, limit: int, offset: int):
     return base.list_paginated(
         db, Transaction, limit, offset, Transaction.investment_id == investment_id
+    )
+
+
+def list_investment_documents(db: Session, investment_id, limit: int, offset: int):
+    return base.list_paginated(
+        db, Document, limit, offset, Document.investment_id == investment_id
     )

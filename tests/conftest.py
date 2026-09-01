@@ -1,7 +1,11 @@
+import shutil
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.security import hash_password
 from app.db.session import engine, get_db
 from app.main import app
@@ -9,6 +13,14 @@ from app.models.enums import UserRole
 from app.models.user import User
 
 TEST_PASSWORD = "password123"
+
+
+@pytest.fixture(autouse=True)
+def _cleanup_uploaded_documents():
+    yield
+    storage_path = Path(get_settings().document_storage_path)
+    if storage_path.exists():
+        shutil.rmtree(storage_path, ignore_errors=True)
 
 
 @pytest.fixture()

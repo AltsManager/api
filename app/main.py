@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin import mount_admin
 from app.core.exceptions import NotFoundError, ValidationError
-from app.routers import auth, counterparties, entities, health, investments, transactions
+from app.routers import auth, counterparties, documents, entities, health, investments, transactions
 
 app = FastAPI(title="AltsManager API")
 
@@ -24,5 +24,6 @@ app.include_router(entities.router)
 app.include_router(counterparties.router)
 app.include_router(investments.router)
 app.include_router(transactions.router)
+app.include_router(documents.router)
 
 mount_admin(app)

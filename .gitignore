@@ -211,3 +211,6 @@ __marimo__/
 
 # Claude Code local config/plugins
 .claude/
+
+# Locally-stored uploaded documents (STORAGE_BACKEND=local)
+/data/

@@ -9,8 +9,10 @@ from app.crud import entity as entity_crud
 from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.common import Page
+from app.schemas.document import DocTypeForm, DocumentRead, NotesForm, TaxYearForm, UploadedFile
 from app.schemas.entity import EntityCreate, EntityRead, EntityUpdate
 from app.schemas.ownership import OwnershipRead
+from app.services.documents import save_uploaded_document
 
 router = APIRouter(prefix="/api/v1/entities", tags=["entities"])
 
@@ -60,3 +62,38 @@ def list_entity_ownerships(
     _get_or_404(db, entity_id)
     items, total = entity_crud.list_entity_ownerships(db, entity_id, limit, offset)
     return Page(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.get("/{entity_id}/documents", response_model=Page[DocumentRead])
+def list_entity_documents(
+    entity_id: uuid.UUID, db: DbSession, _: CurrentUser, limit: Limit = 50, offset: Offset = 0
+):
+    _get_or_404(db, entity_id)
+    items, total = entity_crud.list_entity_documents(db, entity_id, limit, offset)
+    return Page(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.post(
+    "/{entity_id}/documents", response_model=DocumentRead, status_code=status.HTTP_201_CREATED
+)
+def upload_entity_document(
+    entity_id: uuid.UUID,
+    db: DbSession,
+    current_user: WriteAccess,
+    file: UploadedFile,
+    doc_type: DocTypeForm,
+    tax_year: TaxYearForm = None,
+    notes: NotesForm = None,
+):
+    _get_or_404(db, entity_id)
+    return save_uploaded_document(
+        db,
+        file=file,
+        doc_type=doc_type,
+        tax_year=tax_year,
+        entity_id=entity_id,
+        investment_id=None,
+        transaction_id=None,
+        notes=notes,
+        uploaded_by=current_user.id,
+    )

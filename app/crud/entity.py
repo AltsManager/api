@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.crud import base
+from app.models.document import Document
 from app.models.entity import Entity
 from app.models.ownership import Ownership
 
@@ -27,3 +28,7 @@ def delete_entity(db: Session, entity: Entity) -> None:
 
 def list_entity_ownerships(db: Session, entity_id, limit: int, offset: int):
     return base.list_paginated(db, Ownership, limit, offset, Ownership.entity_id == entity_id)
+
+
+def list_entity_documents(db: Session, entity_id, limit: int, offset: int):
+    return base.list_paginated(db, Document, limit, offset, Document.entity_id == entity_id)
