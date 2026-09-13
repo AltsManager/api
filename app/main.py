@@ -1,11 +1,21 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.admin import mount_admin
+from app.core.config import get_settings
 from app.core.exceptions import NotFoundError, ValidationError
 from app.routers import auth, counterparties, documents, entities, health, investments, transactions
 
 app = FastAPI(title="AltsManager API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().cors_origin_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(NotFoundError)

@@ -18,10 +18,15 @@ class Settings(BaseSettings):
     s3_access_key_id: str = ""
     s3_secret_access_key: str = ""
     environment: str = "development"
+    cors_origins: str = "http://localhost:3000"
 
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 @lru_cache
