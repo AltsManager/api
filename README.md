@@ -13,6 +13,9 @@ and transactions, document upload/download/review-status tracking, and a basic
 admin UI for browsing data. Third-party integrations (e.g. Carta) and AI agents
 for recurring data collection are on the roadmap.
 
+See also: [www.altsmanager.org](https://www.altsmanager.org) and the
+[web frontend](https://github.com/AltsManager/web).
+
 ## Requirements
 
 - Python 3.12
