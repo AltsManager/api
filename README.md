@@ -69,6 +69,14 @@ alembic revision --autogenerate -m "..."  # generate a migration after model cha
 alembic upgrade head                      # apply migrations
 ```
 
+## Security
+
+This app handles sensitive financial and tax data. See
+[SECURITY.md](SECURITY.md) for the vulnerability-reporting process and a
+summary of the current security model (including the single-tenant
+authorization model and other known tradeoffs). See
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to propose changes.
+
 ## Project structure
 
 ```

@@ -1,3 +1,5 @@
+# Local development only. Hardcoded credentials and a host-exposed port are
+# fine here but must never be reused for a production deployment.
 services:
   postgres:
     image: postgres:16

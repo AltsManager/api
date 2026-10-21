@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 
 from app.core.config import get_settings
 from app.core.deps import CurrentUser, DbSession
+from app.core.rate_limit import is_rate_limited
 from app.core.security import (
     ACCESS_TOKEN_COOKIE_NAME,
     create_access_token,
@@ -15,7 +16,22 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=UserRead)
-def login(credentials: LoginRequest, response: Response, db: DbSession) -> UserRead:
+def login(
+    credentials: LoginRequest, request: Request, response: Response, db: DbSession
+) -> UserRead:
+    settings = get_settings()
+    client_host = request.client.host if request.client else "unknown"
+    rate_limit_key = f"{client_host}:{credentials.email.lower()}"
+    if is_rate_limited(
+        rate_limit_key,
+        max_attempts=settings.login_rate_limit_attempts,
+        window_seconds=settings.login_rate_limit_window_seconds,
+    ):
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Try again later.",
+        )
+
     user = get_user_by_email(db, credentials.email)
     invalid_credentials = HTTPException(
         status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
@@ -25,7 +41,6 @@ def login(credentials: LoginRequest, response: Response, db: DbSession) -> UserR
     if not verify_password(credentials.password, user.hashed_password):
         raise invalid_credentials
 
-    settings = get_settings()
     token = create_access_token(user.id)
     response.set_cookie(
         key=ACCESS_TOKEN_COOKIE_NAME,
