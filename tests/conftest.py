@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.rate_limit import _attempts as _login_rate_limit_attempts
 from app.core.security import hash_password
 from app.db.session import engine, get_db
 from app.main import app
@@ -21,6 +22,16 @@ def _cleanup_uploaded_documents():
     storage_path = Path(get_settings().document_storage_path)
     if storage_path.exists():
         shutil.rmtree(storage_path, ignore_errors=True)
+
+
+@pytest.fixture(autouse=True)
+def _reset_login_rate_limit():
+    # The limiter's in-memory state is process-global; tests reuse the same
+    # client/email combinations many times in one run, so it must be cleared
+    # between tests to avoid spuriously tripping on test traffic.
+    _login_rate_limit_attempts.clear()
+    yield
+    _login_rate_limit_attempts.clear()
 
 
 @pytest.fixture()
