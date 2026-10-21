@@ -9,7 +9,7 @@ take security issues seriously and appreciate responsible disclosure.
 Please **do not** open a public GitHub issue for security vulnerabilities.
 Instead, report them privately using
 [GitHub Security Advisories](https://github.com/AltsManager/api/security/advisories/new)
-for this repository.
+for this repository, or by emailing **info@altsmanager.com**.
 
 Include as much detail as you can:
 

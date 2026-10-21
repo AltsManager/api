@@ -42,7 +42,7 @@ project in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the maintainers at **TODO: add a maintainer contact email here**.
+reported to the maintainers at **info@altsmanager.com**.
 All complaints will be reviewed and investigated promptly and fairly.
 
 ## Attribution
