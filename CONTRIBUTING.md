@@ -30,6 +30,23 @@ If you changed any SQLAlchemy models, generate a migration:
 alembic revision --autogenerate -m "describe the change"
 ```
 
+## Dependencies
+
+`requirements.in` / `requirements-dev.in` are the source of truth (loose,
+hand-edited); `requirements.txt` / `requirements-dev.txt` are fully pinned
+lockfiles generated from them, for reproducible installs. **Don't hand-edit
+the `.txt` files** — edit the `.in` file and recompile:
+
+```bash
+pip install uv   # one-time, any Python version
+uv pip compile requirements.in -o requirements.txt --python-version 3.12
+uv pip compile requirements-dev.in -o requirements-dev.txt --python-version 3.12 --constraint requirements.txt
+```
+
+Then reinstall (`pip install -r requirements.txt -r requirements-dev.txt`) and
+run the test suite before committing the regenerated lockfiles alongside your
+`.in` change.
+
 ## Pull requests
 
 - Keep PRs focused — one logical change per PR is easier to review.

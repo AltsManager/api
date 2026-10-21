@@ -66,6 +66,26 @@ def test_upload_document_with_unknown_entity_404s(admin_client):
     assert response.status_code == 404
 
 
+def test_upload_document_rejects_disallowed_content_type(admin_client):
+    entity_id = _create_entity(admin_client)
+    files = {"file": ("malware.exe", io.BytesIO(b"MZ"), "application/x-msdownload")}
+    response = admin_client.post(
+        "/api/v1/documents",
+        data={"doc_type": "other", "entity_id": entity_id},
+        files=files,
+    )
+    assert response.status_code == 400
+
+
+def test_upload_document_rejects_oversized_file(admin_client, monkeypatch):
+    from app.core.config import get_settings
+
+    entity_id = _create_entity(admin_client)
+    monkeypatch.setattr(get_settings(), "max_upload_size_bytes", 10)
+    response = _upload(admin_client, "/api/v1/documents", doc_type="other", entity_id=entity_id)
+    assert response.status_code in (400, 413)
+
+
 def test_download_document_returns_uploaded_bytes(admin_client):
     entity_id = _create_entity(admin_client)
     content = b"%PDF-1.4 the actual k1 content"
