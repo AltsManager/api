@@ -1,0 +1,91 @@
+name: Deploy
+
+# Builds the api image and deploys it to Datum Cloud Compute on every push to
+# main (i.e. after a PR merges). See DEPLOY.md for the one-time setup this
+# depends on (Datum project, service account, Secrets, DATABASE_URL).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/altsmanager/api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tag
+        id: image
+        run: echo "image=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    env:
+      DATUM_PROJECT: altsmanager
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      # datumctl is a published Go module (go.datum.net/datumctl); there's no
+      # separate install script as of this writing.
+      - name: Install datumctl
+        run: go install go.datum.net/datumctl@latest
+
+      # Service-account login per https://www.datum.net/docs/datumctl/auth/logging-in.
+      # The service account must be scoped to exactly this one project --
+      # datum-cloud/datumctl#324 is an open bug where --credentials login fails
+      # non-interactively if the account can see more than one context.
+      - name: Authenticate to Datum Cloud
+        env:
+          DATUM_SERVICE_ACCOUNT_KEY: ${{ secrets.DATUM_SERVICE_ACCOUNT_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$DATUM_SERVICE_ACCOUNT_KEY" > "$RUNNER_TEMP/datum-key.json"
+          datumctl login --credentials "$RUNNER_TEMP/datum-key.json"
+          rm -f "$RUNNER_TEMP/datum-key.json"
+
+      # NOTE: unverified against a real deployment -- Compute access for this
+      # project is pending as of when this workflow was written (see DEPLOY.md).
+      # `--image`/`--city`/`--min`/`--http-port` are documented; confirm this
+      # command preserves the workload's existing Secret references (DATABASE_URL,
+      # SECRET_KEY, etc. -- set up via the one-time manifest apply in DEPLOY.md)
+      # on an update rather than only on first create, and adjust if not.
+      - name: Deploy to Datum Compute
+        run: |
+          datumctl compute deploy altsmanager-api \
+            --image="${{ needs.build-and-push.outputs.image }}" \
+            --city=DFW \
+            --min=1 \
+            --http-port=8000
