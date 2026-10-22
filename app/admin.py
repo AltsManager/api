@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from fastapi import FastAPI
@@ -139,6 +140,7 @@ def mount_admin(app: FastAPI) -> Admin:
         authentication_backend=AdminAuth(secret_key=settings.secret_key),
         base_url="/admin",
         title="AltsManager Admin",
+        templates_dir=os.path.join(os.path.dirname(__file__), "admin_templates"),
     )
     for view in (
         EntityAdmin,
