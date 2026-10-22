@@ -33,20 +33,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set image tag
-        id: image
-        run: echo "image=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
-
       - uses: docker/setup-buildx-action@v3
 
       - name: Build and push
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ steps.image.outputs.image }}
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Deploy by digest, not tag -- a `datumctl compute deploy` re-run
+      # against the same tag didn't reliably pick up a newly-pushed image
+      # during manual testing (see DEPLOY.md "Gotchas" #5).
+      - name: Set deploy image reference
+        id: image
+        run: echo "image=${IMAGE}@${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: build-and-push
@@ -76,16 +80,17 @@ jobs:
           datumctl login --credentials "$RUNNER_TEMP/datum-key.json"
           rm -f "$RUNNER_TEMP/datum-key.json"
 
-      # NOTE: unverified against a real deployment -- Compute access for this
-      # project is pending as of when this workflow was written (see DEPLOY.md).
-      # `--image`/`--city`/`--min`/`--http-port` are documented; confirm this
-      # command preserves the workload's existing Secret references (DATABASE_URL,
-      # SECRET_KEY, etc. -- set up via the one-time manifest apply in DEPLOY.md)
-      # on an update rather than only on first create, and adjust if not.
+      # --runtime-class is required and immutable: the platform default
+      # (unikernel) can't run a plain `docker build` image. See DEPLOY.md
+      # "Gotchas" for this and the other flags below -- all verified against
+      # a real deployment.
       - name: Deploy to Datum Compute
         run: |
           datumctl compute deploy altsmanager-api \
             --image="${{ needs.build-and-push.outputs.image }}" \
+            --runtime-class=general-purpose \
             --city=DFW \
             --min=1 \
-            --http-port=8000
+            --http-port=8000 \
+            --env-from-secret=altsmanager-api-secrets \
+            --env=ENVIRONMENT=production
