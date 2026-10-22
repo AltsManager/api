@@ -4,13 +4,29 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # Majors are left out of the group so they still open as their own PR
+      # and get a closer look -- only minor/patch bumps get batched.
+      pip-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      docker-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
