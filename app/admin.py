@@ -146,7 +146,9 @@ class UserAdmin(ModelView, model=User):
         form_class.password = PasswordField(
             "Password",
             validators=[OptionalField()],
-            description="Required when creating a user. Leave blank on edit to keep the current password.",
+            description=(
+                "Required when creating a user. Leave blank on edit to keep the current password."
+            ),
         )
         return form_class
 
