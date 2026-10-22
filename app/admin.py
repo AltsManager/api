@@ -1,13 +1,17 @@
 import os
 import uuid
+from typing import Any
 
 from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
+from wtforms import PasswordField
+from wtforms.form import Form as WTForm
+from wtforms.validators import Optional as OptionalField
 
 from app.core.config import get_settings
-from app.core.security import verify_password
+from app.core.security import hash_password, verify_password
 from app.crud.user import get_user_by_email
 from app.db.session import SessionLocal, engine
 from app.models.counterparty import Counterparty
@@ -56,11 +60,15 @@ class AdminAuth(AuthenticationBackend):
 
 
 class EntityAdmin(ModelView, model=Entity):
+    name = "Entity"
+    name_plural = "Entities"
     column_list = [Entity.id, Entity.name, Entity.entity_type, Entity.jurisdiction]
     form_excluded_columns = [Entity.created_at, Entity.updated_at]
 
 
 class CounterpartyAdmin(ModelView, model=Counterparty):
+    name = "Counterparty"
+    name_plural = "Counterparties"
     column_list = [
         Counterparty.id,
         Counterparty.name,
@@ -83,6 +91,8 @@ class InvestmentAdmin(ModelView, model=Investment):
 
 
 class InvestmentCounterpartyAdmin(ModelView, model=InvestmentCounterparty):
+    name = "Investment Counterparty"
+    name_plural = "Investment Counterparties"
     column_list = [
         InvestmentCounterparty.id,
         InvestmentCounterparty.investment_id,
@@ -130,6 +140,27 @@ class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.email, User.full_name, User.role, User.is_active]
     form_excluded_columns = [User.hashed_password, User.created_at, User.updated_at]
     can_delete = False
+
+    async def scaffold_form(self, rules: list[str] | None = None) -> type[WTForm]:
+        form_class = await super().scaffold_form(rules)
+        form_class.password = PasswordField(
+            "Password",
+            validators=[OptionalField()],
+            description="Required when creating a user. Leave blank on edit to keep the current password.",
+        )
+        return form_class
+
+    async def on_model_change(
+        self, data: dict[str, Any], model: Any, is_created: bool, request: Request
+    ) -> None:
+        if isinstance(data.get("email"), str):
+            data["email"] = data["email"].strip()
+
+        password = data.pop("password", None)
+        if password:
+            data["hashed_password"] = hash_password(password)
+        elif is_created:
+            raise ValueError("Password is required when creating a user.")
 
 
 def mount_admin(app: FastAPI) -> Admin:
