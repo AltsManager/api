@@ -67,6 +67,14 @@ jobs:
       - name: Install datumctl
         run: go install go.datum.net/datumctl@latest
 
+      # `compute` is a separately-installed datumctl plugin, not bundled with
+      # the base `go install` above -- a fresh install has no plugins at all,
+      # so `datumctl compute deploy` doesn't exist until this runs (manifests
+      # as `error: unknown flag: --image`, since the root command silently
+      # falls back to printing its own help instead of the subcommand's).
+      - name: Install datumctl compute plugin
+        run: datumctl plugin install compute
+
       # Service-account login per https://www.datum.net/docs/datumctl/auth/logging-in.
       # The service account must be scoped to exactly this one project --
       # datum-cloud/datumctl#324 is an open bug where --credentials login fails
