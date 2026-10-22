@@ -101,4 +101,5 @@ jobs:
             --min=1 \
             --http-port=8000 \
             --env-from-secret=altsmanager-api-secrets \
-            --env=ENVIRONMENT=production
+            --env=ENVIRONMENT=production \
+            --env=CORS_ORIGINS=https://demo.altsmanager.org,https://strawberry-blurt-fd7s9.datumproxy.net
