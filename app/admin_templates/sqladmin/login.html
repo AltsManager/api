@@ -1,0 +1,63 @@
+{% extends "sqladmin/base.html" %}
+{% block head_tail %}
+{{ super() }}
+<style>
+  .login-shell {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0d1b2e 0%, #13263f 55%, #1d3a5f 100%);
+  }
+
+  .login-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(13, 27, 46, 0.35);
+  }
+
+  .login-brand {
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #13263f;
+    font-size: 1.4rem;
+  }
+
+  .login-brand span {
+    color: #c9a227;
+  }
+</style>
+{% endblock %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-center login-shell">
+  <form class="col-lg-4 col-md-6 card card-md login-card" action="{{ url_for('admin:login') }}" method="POST" autocomplete="off">
+    <div class="card-body p-5">
+      <div class="text-center mb-4">
+        <div class="login-brand">Alts<span>Manager</span></div>
+        <div class="text-muted small mt-1">{{ _("Sign in to %(title)s", title=admin.title) }}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">{{ _("Username") }}</label>
+        {% if error %}
+        <input name="username" type="text" class="form-control is-invalid" placeholder="{{ _('Enter username') }}" autocomplete="off">
+        <div class="invalid-feedback">{{ error }}</div>
+        {% else %}
+        <input name="username" type="text" class="form-control" placeholder="{{ _('Enter username') }}" autocomplete="off">
+        {% endif %}
+      </div>
+      <div class="mb-2">
+        <label class="form-label">{{ _("Password") }}</label>
+        <div class="input-group input-group-flat">
+          {% if error %}
+          <input name="password" type="password" class="form-control is-invalid" placeholder="{{ _('Password') }}" autocomplete="off">
+          <div class="invalid-feedback">{{ error }}</div>
+          {% else %}
+          <input name="password" type="password" class="form-control" placeholder="{{ _('Password') }}" autocomplete="off">
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn btn-primary w-100">{{ _("Sign in") }}</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

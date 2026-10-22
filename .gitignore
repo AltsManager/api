@@ -214,3 +214,8 @@ __marimo__/
 
 # Locally-stored uploaded documents (STORAGE_BACKEND=local)
 /data/
+
+# Live-state snapshot saved locally by `datumctl compute deploy` -- not clean
+# source (resourceVersion/managedFields/status churn on every deploy); the
+# deploy pipeline manages the workload declaratively via deploy.yml's flags.
+/workload.yaml

@@ -1,0 +1,96 @@
+name: Deploy
+
+# Builds the api image and deploys it to Datum Cloud Compute on every push to
+# main (i.e. after a PR merges). See DEPLOY.md for the one-time setup this
+# depends on (Datum project, service account, Secrets, DATABASE_URL).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/altsmanager/api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Deploy by digest, not tag -- a `datumctl compute deploy` re-run
+      # against the same tag didn't reliably pick up a newly-pushed image
+      # during manual testing (see DEPLOY.md "Gotchas" #5).
+      - name: Set deploy image reference
+        id: image
+        run: echo "image=${IMAGE}@${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    env:
+      DATUM_PROJECT: altsmanager
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      # datumctl is a published Go module (go.datum.net/datumctl); there's no
+      # separate install script as of this writing.
+      - name: Install datumctl
+        run: go install go.datum.net/datumctl@latest
+
+      # Service-account login per https://www.datum.net/docs/datumctl/auth/logging-in.
+      # The service account must be scoped to exactly this one project --
+      # datum-cloud/datumctl#324 is an open bug where --credentials login fails
+      # non-interactively if the account can see more than one context.
+      - name: Authenticate to Datum Cloud
+        env:
+          DATUM_SERVICE_ACCOUNT_KEY: ${{ secrets.DATUM_SERVICE_ACCOUNT_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$DATUM_SERVICE_ACCOUNT_KEY" > "$RUNNER_TEMP/datum-key.json"
+          datumctl login --credentials "$RUNNER_TEMP/datum-key.json"
+          rm -f "$RUNNER_TEMP/datum-key.json"
+
+      # --runtime-class is required and immutable: the platform default
+      # (unikernel) can't run a plain `docker build` image. See DEPLOY.md
+      # "Gotchas" for this and the other flags below -- all verified against
+      # a real deployment.
+      - name: Deploy to Datum Compute
+        run: |
+          datumctl compute deploy altsmanager-api \
+            --image="${{ needs.build-and-push.outputs.image }}" \
+            --runtime-class=general-purpose \
+            --city=DFW \
+            --min=1 \
+            --http-port=8000 \
+            --env-from-secret=altsmanager-api-secrets \
+            --env=ENVIRONMENT=production
