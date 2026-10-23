@@ -1,21 +1,34 @@
 {% extends "sqladmin_original/base.html" %}
 {% block head_tail %}
 <style>
+  /*
+   * Same teal/charcoal identity as the web frontend (web/src/app/globals.css):
+   * primary #0d9488, gain #0ca30c, loss #d03b3b. Kept in sync by hand since
+   * this is server-rendered Jinja/Tabler CSS, not the same build pipeline.
+   */
   :root {
-    --tblr-primary: #13263f;
-    --tblr-primary-rgb: 19, 38, 63;
+    --tblr-primary: #0d9488;
+    --tblr-primary-rgb: 13, 148, 136;
   }
 
   body {
-    background-color: #f4f5f7;
+    background-color: #fafaf9;
   }
 
   .navbar.navbar-vertical {
-    background: linear-gradient(180deg, #0d1b2e 0%, #13263f 100%) !important;
+    background: linear-gradient(180deg, #0f3b36 0%, #134e4a 100%) !important;
+  }
+
+  /* The sidebar nests its own <nav class="navbar">, which Tabler's dark
+     theme gives its own opaque background -- painting over the gradient
+     above in a visible seam. Make it transparent so the gradient shows
+     through the whole sidebar, not just above/below the nav links. */
+  .navbar-vertical .navbar {
+    background: transparent !important;
   }
 
   .navbar-brand-autodark h3 {
-    color: #c9a227;
+    color: #5eead4;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -24,30 +37,40 @@
   }
 
   .navbar-vertical .nav-link.active {
-    background-color: rgba(201, 162, 39, 0.15);
-    border-left: 3px solid #c9a227;
+    background-color: rgba(45, 212, 191, 0.15);
+    border-left: 3px solid #2dd4bf;
     color: #fff !important;
   }
 
   .btn-primary {
-    background-color: #13263f;
-    border-color: #13263f;
+    background-color: #0d9488;
+    border-color: #0d9488;
   }
 
   .btn-primary:hover,
   .btn-primary:focus {
-    background-color: #0d1b2e;
-    border-color: #0d1b2e;
+    background-color: #0f766e;
+    border-color: #0f766e;
   }
 
   .page-title {
     font-weight: 600;
-    color: #13263f;
+    color: #0f766e;
   }
 
   .card {
-    border: 1px solid #e6e8eb;
+    border: 1px solid #e7e5e4;
     box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+
+  .badge.bg-green,
+  .text-green {
+    color: #0ca30c !important;
+  }
+
+  .badge.bg-red,
+  .text-red {
+    color: #d03b3b !important;
   }
 </style>
 {% endblock %}
