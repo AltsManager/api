@@ -26,5 +26,5 @@ pygments==2.21.0
     # via pytest
 pytest==9.2.0
     # via -r requirements-dev.in
-ruff==0.17.3
+ruff==0.17.4
     # via -r requirements-dev.in
