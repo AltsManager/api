@@ -3,7 +3,7 @@ uvicorn[standard]
 # [asyncio] extra pulls in greenlet, which sqladmin requires unconditionally
 # (it imports sqlalchemy.ext.asyncio internally) even though the app itself
 # only uses sync sessions.
-sqlalchemy[asyncio]>=2.0
+sqlalchemy[asyncio]>=2.1.8
 alembic
 psycopg[binary]
 pydantic-settings
